@@ -27,33 +27,14 @@ public class CharacterManager : MonoBehaviour
             yield break;
         }
 
-        // 创建玩家角色
-        CreateCharacter(
-            "Player 1",
-            new GridPosition(1, 3),
-            Team.Player
-        );
-
-        // 创建玩家角色
-        CreateCharacter(
-            "Player 2",
-            new GridPosition(1, 4),
-            Team.Player
-        );
-
-        // 创建敌人
-        CreateCharacter(
-            "Enemy 1",
-            new GridPosition(4, 4),
-            Team.Enemy
-        );
-
-        // 创建敌人
-        CreateCharacter(
-            "Enemy 2",
-            new GridPosition(5, 4),
-            Team.Enemy
-        );
+        // ↓↓↓ 角色改由「选秀 + 部署」流程生成（CharacterDraftManager.CreateCharacters），
+        //     这里不再硬编码生成，否则会和选秀结果冲突。需要恢复旧测试时取消下面注释即可。
+        /*
+        CreateCharacter("Player 1", new GridPosition(1, 3), Team.Player);
+        CreateCharacter("Player 2", new GridPosition(1, 4), Team.Player);
+        CreateCharacter("Enemy 1",  new GridPosition(4, 4), Team.Enemy);
+        CreateCharacter("Enemy 2",  new GridPosition(5, 4), Team.Enemy);
+        */
     }
 
 

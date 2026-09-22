@@ -13,6 +13,16 @@ public class PlayerCardManager : MonoBehaviour
     [SerializeField]
     private bool hasMovementCard = true;
 
+    [Header("手牌UI（在场景里建好 CardUI 槽后拖上来）")]
+    [SerializeField]
+    private HandUIManager handUIManager;
+
+    [Header("调试：直接在屏幕上显示手牌（按 F1 开关）")]
+    [SerializeField]
+    private bool showDebugHandUI = true;
+
+    private BattleManager battleManager;
+
     //12张技能卡牌堆
     private List<SkillCard> skillDeck = new List<SkillCard>();
 
@@ -85,6 +95,78 @@ public class PlayerCardManager : MonoBehaviour
         Debug.Log($"{playerName}初始手牌，技能卡{skillHand.Count}张，移动卡{(movementCardInHand?1:0)}张");
 
         PrintHand();
+
+        // 把初始手牌推给手牌 UI（如果场景里已经建好并拖进来）
+        if (handUIManager != null)
+        {
+            handUIManager.SetHand(skillHand.ToArray());
+        }
+    }
+
+    // 调试用：不依赖任何 UI 物体，直接在屏幕上画出手牌
+    // 按 F1 随时开关；选秀 / 角色摆放阶段会自动隐藏，避免挡住棋盘
+    private void OnGUI()
+    {
+        if (Event.current != null &&
+            Event.current.type == EventType.KeyDown &&
+            Event.current.keyCode == KeyCode.F1)
+        {
+            showDebugHandUI = !showDebugHandUI;
+
+            Debug.Log($"手牌调试显示：{(showDebugHandUI ? "开" : "关")}");
+        }
+
+        if (!showDebugHandUI)
+            return;
+
+        if (battleManager == null)
+        {
+            battleManager = FindFirstObjectByType<BattleManager>();
+        }
+
+        // 还没进入战斗（state == None，即选秀 / 角色摆放阶段）就不显示
+        if (battleManager == null ||
+            battleManager.GetCurrentState() == BattleState.None)
+        {
+            return;
+        }
+
+        bool isEnemy = playerName != null && playerName.Contains("Enemy");
+
+        GUIStyle titleStyle = new GUIStyle(GUI.skin.label);
+        titleStyle.fontSize = 20;
+
+        GUIStyle cardStyle = new GUIStyle(GUI.skin.box);
+        cardStyle.fontSize = 16;
+        cardStyle.alignment = TextAnchor.MiddleCenter;
+
+        // 对手手牌画在棋盘上方、自己的画在棋盘下方，横向再宽也不会压住棋盘
+        float y = isEnemy ? 10f : Screen.height - 120f;
+
+        GUI.Label(
+            new Rect(10, y, 900, 28),
+            $"{playerName}手牌：技能卡 {skillHand.Count} 张 + 移动卡 {(movementCardInHand ? 1 : 0)} 张",
+            titleStyle
+        );
+
+        y += 30f;
+
+        float x = 10f;
+
+        if (movementCardInHand)
+        {
+            GUI.Box(new Rect(x, y, 110, 52), "移动卡\n4格", cardStyle);
+            x += 118f;
+        }
+
+        for (int i = 0; i < skillHand.Count; i++)
+        {
+            SkillCard card = skillHand[i];
+            string label = card != null ? card.GetCardName() : "(空)";
+
+            GUI.Box(new Rect(x, y, 110, 52), $"技能卡{i + 1}\n{label}", cardStyle);
+            x += 118f;
+        }
     }
 
     private void PrintHand()

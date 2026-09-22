@@ -21,6 +21,13 @@ public class CharacterDraftManager : MonoBehaviour
     [SerializeField]
     private int charactersPerPlayer = 4;
 
+    [Header("角色摆放")]
+    [SerializeField]
+    private DeploymentManager deploymentManager;
+
+    private List<Character> playerCharacterList = new List<Character>();
+    private List<Character> enemyCharacterList = new List<Character>();
+
     private List<CharacterData> availableCharacters = new List<CharacterData>();
     private List<CharacterData> playerCharacters = new List<CharacterData>();
     private List<CharacterData> enemyCharacters = new List<CharacterData>();
@@ -170,6 +177,65 @@ public class CharacterDraftManager : MonoBehaviour
         }
 
         Debug.Log("==============双方初始手牌生成完成================");
+
+        // ============ 选秀结束 → 生成棋盘角色 → 进入部署阶段 ============
+        playerCharacterList = CreateCharacters(playerCharacters, Team.Player);
+        enemyCharacterList = CreateCharacters(enemyCharacters, Team.Enemy);
+
+        if (deploymentManager != null)
+        {
+            deploymentManager.StartDeployment(playerCharacterList, enemyCharacterList);
+        }
+        else
+        {
+            Debug.LogError("没有找到DeploymentManager，无法进入部署阶段！");
+        }
+    }
+
+    /// <summary>
+    /// 按选秀结果创建棋盘上的角色实例（部署前先不上盘）
+    /// </summary>
+    private List<Character> CreateCharacters(List<CharacterData> datas, Team team)
+    {
+        List<Character> result = new List<Character>();
+
+        if (datas == null)
+        {
+            return result;
+        }
+
+        foreach (CharacterData data in datas)
+        {
+            if (data == null)
+            {
+                continue;
+            }
+
+            GameObject characterObject =
+                GameObject.CreatePrimitive(PrimitiveType.Quad);
+
+            characterObject.name = data.GetCharacterName();
+            characterObject.transform.SetParent(transform);
+            characterObject.transform.localScale = Vector3.one * 0.65f;
+
+            Character character =
+                characterObject.AddComponent<Character>();
+
+            character.SetCharacterData(data);
+            character.SetSkillCards(data.GetSkillCards());
+            character.SetCharacterName(data.GetCharacterName());
+            character.InitializeOffBoard(team);
+
+            result.Add(character);
+
+            Debug.Log(
+                $"生成角色：{data.GetCharacterName()} | " +
+                $"阵营：{team} | " +
+                $"HP：{data.GetMaxHp()}"
+            );
+        }
+
+        return result;
     }
 
     public CharacterData GetOptionA()
@@ -213,6 +279,7 @@ public class CharacterDraftManager : MonoBehaviour
         //左边角色
         if(GUI.Button(new Rect(Screen.width / 2 - 350, 150, 300, 150), optionA.GetCharacterName(), buttonStyle)){
             PlayerChoose(0);
+            return;
         }
         //右边角色
         if (GUI.Button(new Rect(Screen.width / 2 + 50, 150, 300, 150), optionB.GetCharacterName(), buttonStyle))

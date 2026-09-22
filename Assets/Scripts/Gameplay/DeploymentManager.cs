@@ -71,15 +71,38 @@ public class DeploymentManager : MonoBehaviour
         Debug.Log($"选择摆放角色：{character.GetCharacterNameV2()}");
     }
 
+    //当前该摆放的角色（按选秀顺序）
+    private Character GetNextUnplacedCharacter()
+    {
+        List<Character> list =
+            (currentSide == DeploymentSide.Player) ? playerCharacters : enemyCharacters;
+
+        if (list == null)
+            return null;
+        if (currentIndex < 0 || currentIndex >= list.Count)
+            return null;
+
+        return list[currentIndex];
+    }
+
     //点击棋盘格
     public void SelectTile(Tile tile)
     {
         if (tile == null)
             return;
+
         if (selectedCharacter == null)
         {
-            Debug.Log("请先选择一个角色");
-            return;
+            // 没有角色面板 UI 时，自动取当前该摆放的那个角色
+            selectedCharacter = GetNextUnplacedCharacter();
+
+            if (selectedCharacter == null)
+            {
+                Debug.Log("请先选择一个角色");
+                return;
+            }
+
+            Debug.Log($"自动选择待摆放角色：{selectedCharacter.GetCharacterNameV2()}");
         }
         if (!availableTiles.Contains(tile))
         {
@@ -194,6 +217,77 @@ public class DeploymentManager : MonoBehaviour
     {
         return availableTiles.Contains(tile);
 
+    }
+
+    // ============ 部署阶段的屏幕提示（不依赖任何 UI 物体） ============
+    private void OnGUI()
+    {
+        if (currentSide == DeploymentSide.Finished)
+            return;
+
+        List<Character> list =
+            (currentSide == DeploymentSide.Player) ? playerCharacters : enemyCharacters;
+
+        if (list == null || list.Count == 0)
+            return;
+
+        GUIStyle titleStyle = new GUIStyle(GUI.skin.label);
+        titleStyle.fontSize = 22;
+        titleStyle.normal.textColor = Color.white;
+
+        GUIStyle lineStyle = new GUIStyle(GUI.skin.label);
+        lineStyle.fontSize = 17;
+        lineStyle.normal.textColor = Color.yellow;
+
+        string sideName = (currentSide == DeploymentSide.Player) ? "玩家方" : "敌方";
+
+        Rect panel = new Rect(10f, 10f, 430f, 134f);
+        GUI.Box(panel, GUIContent.none);
+
+        float x = panel.x + 12f;
+        float y = panel.y + 8f;
+
+        GUI.Label(
+            new Rect(x, y, 410f, 28f),
+            $"【{sideName}角色摆放】 {currentIndex} / {list.Count}",
+            titleStyle
+        );
+        y += 30f;
+
+        Character current = selectedCharacter;
+
+        if (current == null && currentIndex < list.Count)
+        {
+            current = list[currentIndex];
+        }
+
+        if (current != null)
+        {
+            GUI.Label(
+                new Rect(x, y, 410f, 24f),
+                $"当前要摆：{current.GetCharacterNameV2()}   HP {current.GetMaxHpV2()}",
+                lineStyle
+            );
+        }
+        y += 26f;
+
+        GUI.Label(new Rect(x, y, 410f, 24f), "点棋盘上高亮的格子 → 放下该角色", lineStyle);
+        y += 26f;
+
+        string placed = "";
+
+        for (int i = 0; i < currentIndex && i < list.Count; i++)
+        {
+            if (list[i] != null)
+            {
+                placed += $"{list[i].GetCharacterNameV2()}{list[i].GetGridPosition()}  ";
+            }
+        }
+
+        if (placed != "")
+        {
+            GUI.Label(new Rect(x, y, 410f, 24f), "已摆放：" + placed, lineStyle);
+        }
     }
   //  public DeploymentSide GetCurrentSide()
     //{

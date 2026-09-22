@@ -505,4 +505,16 @@ public class MovementManager : MonoBehaviour
         ClearMovementRange();
         CalculateMovementRange(moveRange);
     }
+
+    public void SelectSkillCard(SkillCard card)
+    {
+        if (card == null)
+            return;
+
+        selectedSkillCard = card;
+
+        Debug.Log(
+            $"当前选择技能卡：{card.GetCardName()}"
+        );
+    }
 }

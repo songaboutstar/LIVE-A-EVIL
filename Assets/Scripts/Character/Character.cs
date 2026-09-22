@@ -119,6 +119,13 @@ public class Character : MonoBehaviour
         gridPosition = position;
         currentTile = tile;
         team = characterTeam;
+
+        // HP 以角色面板（CharacterData）为准
+        if (characterData != null)
+        {
+            maxHp = characterData.GetMaxHp();
+        }
+
         currentHp = maxHp;
 
         gameObject.name = "TestCharacter";
@@ -338,6 +345,44 @@ public class Character : MonoBehaviour
     public CharacterData GetCharacterData()
     {
         return characterData;
+    }
+
+    /// <summary>
+    /// 设置角色数据（运行时由选秀结果注入）
+    /// </summary>
+    public void SetCharacterData(CharacterData data)
+    {
+        characterData = data;
+
+        if (characterData != null)
+        {
+            maxHp = characterData.GetMaxHp();
+        }
+
+        currentHp = maxHp;
+    }
+
+    /// <summary>
+    /// 部署阶段用：先不上棋盘，等玩家点格子后再 MoveTo 上盘
+    /// </summary>
+    public void InitializeOffBoard(Team characterTeam)
+    {
+        team = characterTeam;
+        currentTile = null;
+        gridPosition = new GridPosition(-1, -1);
+
+        if (characterData != null)
+        {
+            maxHp = characterData.GetMaxHp();
+        }
+
+        currentHp = maxHp;
+
+        movementManager = FindFirstObjectByType<MovementManager>();
+        battleManager = FindFirstObjectByType<BattleManager>();
+
+        SetSelected(false);
+        SetNormalColor();
     }
 
     public SkillCard[] GetSkillCardsV2()

@@ -15,6 +15,6 @@ MonoBehaviour:
   characterName: "\u6CE2\u53EF"
   maxHp: 9
   skillCards:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 11400000, guid: b7d32444a3a73db458ed9a1372f816dd, type: 2}
+  - {fileID: 11400000, guid: 78866812fc9d45f4e930fd76b4dc9fa2, type: 2}
+  - {fileID: 11400000, guid: 8d4cc3382314a3a47a9cc1f57148f958, type: 2}
