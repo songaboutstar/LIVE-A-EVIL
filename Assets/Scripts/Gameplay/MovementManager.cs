@@ -11,7 +11,7 @@ public class MovementManager : MonoBehaviour
     private BoardManager boardManager;
     private ActionUIManager actionUIManager;
 
-
+    private SkillCard selectedSkillCard;
     //是否处于技能攻击后的移动
     private bool isSkillMove = false;
 

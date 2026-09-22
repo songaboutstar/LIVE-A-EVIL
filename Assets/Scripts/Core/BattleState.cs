@@ -1,6 +1,12 @@
 public enum BattleState
 {
     None,
+
+    CharacterDraft,//角色选择
+    CardSetup,//卡牌分配
+    Deployment,//角色摆放
+
+
     //玩家回合
     PlayerTurn,
     //敌人回合

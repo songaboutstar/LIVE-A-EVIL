@@ -51,6 +51,10 @@ public class Tile: MonoBehaviour
     private AttackManager attackManager;
     private SkillManager skillManager;
 
+
+    private DeploymentManager deploymentManager;
+
+
     private void Awake()
     {
         tileRenderer = GetComponent<Renderer>();
@@ -102,6 +106,7 @@ public class Tile: MonoBehaviour
 
         skillManager = FindFirstObjectByType<SkillManager>();
 
+        deploymentManager = FindAnyObjectByType<DeploymentManager>();
     }
 
     //GridPosition
@@ -223,8 +228,14 @@ public class Tile: MonoBehaviour
     private void OnMouseDown()
     {
         Debug.Log($"点击棋盘格：{gridPosition}");
+        
+        if (deploymentManager != null &&
+                     deploymentManager.IsDeploymentTile(this))
+        {
+            deploymentManager.SelectTile(this);
+            return;
+        }
         //判断是否为移动目标
-
         if (movementManager != null && movementManager.IsMovableTile(this))
         {
             movementManager.MoveCharacter(this);

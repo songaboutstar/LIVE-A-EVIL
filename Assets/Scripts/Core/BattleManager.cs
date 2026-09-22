@@ -20,7 +20,7 @@ public class BattleManager: MonoBehaviour
     private TimerManager timerManager;
 
 
-    private void Start()
+    public void StartBattle()
     {
         movementManager = FindFirstObjectByType<MovementManager>();
         attackManager = FindFirstObjectByType<AttackManager>();
@@ -31,8 +31,9 @@ public class BattleManager: MonoBehaviour
         {
             Debug.LogError("BattleManager：找不到TimerManager!");
         }
-
-        StartPlayerTurn();
+       
+       
+       StartPlayerTurn();
     }
 
     //开始玩家回合
@@ -100,6 +101,7 @@ public class BattleManager: MonoBehaviour
             Debug.LogWarning("没有选择角色！");
             return;
         }
+       
         if (currentCharacter.HasMoved())
         {
             Debug.Log("该角色本回合已经移动过了");
