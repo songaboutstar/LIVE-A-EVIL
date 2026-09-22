@@ -22,5 +22,6 @@ MonoBehaviour:
   rangeType: 4
   effectRange: 0
   effectRangeType: 0
-  effectType: 2
+  effectTypes:
+  - 2
   timer: 0

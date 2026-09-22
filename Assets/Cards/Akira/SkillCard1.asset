@@ -18,9 +18,10 @@ MonoBehaviour:
   customRange: []
   moveRange: 2
   damage: 1
-  range: 3
+  range: 1
   rangeType: 7
-  effectRange: 3
+  effectRange: 1
   effectRangeType: 7
-  effectType: 2
+  effectTypes:
+  - 2
   timer: 3

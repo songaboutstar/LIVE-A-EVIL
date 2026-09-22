@@ -92,6 +92,46 @@ public class TimerManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 取消某个角色正在计时中的技能：取下计时计数块、弃掉那张卡，
+    /// 棋盘上它的目标块也一并取回（目标格就存在这条计时记录里）。
+    /// 返回被取消的数量。
+    /// </summary>
+    public int CancelPendingSkillsOf(Character character)
+    {
+        if (character == null)
+        {
+            return 0;
+        }
+
+        int removed = 0;
+
+        for (int i = pendingSkills.Count - 1; i >= 0; i--)
+        {
+            PendingSkill pending = pendingSkills[i];
+
+            if (pending.character != character)
+            {
+                continue;
+            }
+
+            string targetInfo = pending.targetTile != null
+                ? pending.targetTile.GetGridPosition().ToString()
+                : "(无)";
+
+            Debug.Log(
+                $"取消计时：{character.GetCharacterNameV2()} 的 " +
+                $"{pending.card.GetCardName()}，" +
+                $"取回目标块 {targetInfo}"
+            );
+
+            pendingSkills.RemoveAt(i);
+            removed++;
+        }
+
+        return removed;
+    }
+
     //当前计时中的技能数量
     public int GetPendingSkillCount()
     {

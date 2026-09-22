@@ -42,9 +42,13 @@ public class SkillCard : ActionCard
     [SerializeField]
     private RangeType effectRangeType = RangeType.Single;
 
-    [Header("特殊效果")]
+    [Header("特殊效果（可多选）")]
     [SerializeField]
-    private SkillEffectType effectType = SkillEffectType.None;
+    private SkillEffectType[] effectTypes = new SkillEffectType[0];
+
+    [Header("回复量（带「回复」效果时生效）")]
+    [SerializeField]
+    private int healAmount = 2;
 
     [Header("计时器")]
     [SerializeField]
@@ -82,9 +86,35 @@ public class SkillCard : ActionCard
         return effectRange;
     }
 
-    public SkillEffectType GetEffectType()
+    public int GetHealAmount()
     {
-        return effectType;
+        return healAmount;
+    }
+
+    public SkillEffectType[] GetEffectTypes()
+    {
+        return effectTypes;
+    }
+
+    /// <summary>
+    /// 这张卡是否带有某个特殊效果（一张卡可以有多个效果）
+    /// </summary>
+    public bool HasEffect(SkillEffectType type)
+    {
+        if (effectTypes == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < effectTypes.Length; i++)
+        {
+            if (effectTypes[i] == type)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public int GetTimer()

@@ -24,7 +24,7 @@ MonoBehaviour:
   damage: 4
   range: 0
   rangeType: 10
-  effectRange: 0
-  effectRangeType: 0
-  effectType: 0
+  effectRange: 3
+  effectRangeType: 4
+  effectTypes: []
   timer: 3

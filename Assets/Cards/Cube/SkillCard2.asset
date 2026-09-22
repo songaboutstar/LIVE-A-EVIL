@@ -19,8 +19,9 @@ MonoBehaviour:
   moveRange: 2
   damage: 5
   range: 10
-  rangeType: 1
+  rangeType: 11
   effectRange: 10
-  effectRangeType: 1
-  effectType: 5
+  effectRangeType: 11
+  effectTypes:
+  - 5
   timer: 2

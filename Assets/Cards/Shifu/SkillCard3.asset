@@ -30,5 +30,6 @@ MonoBehaviour:
   rangeType: 10
   effectRange: 0
   effectRangeType: 0
-  effectType: 3
+  effectTypes:
+  - 3
   timer: 0

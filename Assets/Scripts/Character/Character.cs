@@ -332,6 +332,24 @@ public class Character : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 回复HP（不会超过上限）
+    /// </summary>
+    public void Heal(int amount)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        currentHp = Mathf.Min(maxHp, currentHp + amount);
+
+        Debug.Log(
+            $"{characterName}回复{amount}点HP，" +
+            $"当前HP：{currentHp}/{maxHp}"
+        );
+    }
+
     public string GetCharacterNameV2()
     {
         return characterData != null ? characterData.GetCharacterName() : "Unknow Character";

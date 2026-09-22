@@ -19,5 +19,5 @@ MonoBehaviour:
   rangeType: 9
   effectRange: 2
   effectRangeType: 4
-  effectType: 0
+  effectTypes: []
   timer: 3
