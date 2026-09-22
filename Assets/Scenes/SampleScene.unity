@@ -1197,7 +1197,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   defaultMovementCard: {fileID: 11400000, guid: d68ac4f6772c197488e0f90738f12e6d, type: 2}
   defaultSkillCards:
-  - {fileID: 11400000, guid: b218d44af0313b84c93c09b5712e3024, type: 2}
+  - {fileID: 11400000, guid: 749433f1039a7924d8dbed6e7a723c42, type: 2}
 --- !u!4 &1132815294
 Transform:
   m_ObjectHideFlags: 0

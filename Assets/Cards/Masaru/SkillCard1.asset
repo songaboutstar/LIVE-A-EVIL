@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 257c6d39eb7b5c844ae369420cf9738a, type: 3}
+  m_Name: SkillCard1
+  m_EditorClassIdentifier: 
+  cardName: "\u70C8\u98CE\u6B63\u62F3\u7A81\u51FB"
+  description: "\u65E0\u7279\u6B8A\u6548\u679C"
+  ownerCharacter: {fileID: 11400000, guid: 916adfc0c32d82b47ad891d845e33028, type: 2}
+  customRange: []
+  moveRange: 1
+  damage: 3
+  range: 1
+  rangeType: 4
+  effectRange: 0
+  effectRangeType: 0
+  effectType: 0
+  timer: 0
