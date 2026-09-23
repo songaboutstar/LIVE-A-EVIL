@@ -223,6 +223,15 @@ public class CharacterDraftManager : MonoBehaviour
 
             character.SetCharacterData(data);
             character.SetSkillCards(data.GetSkillCards());
+
+            //移动卡：所有角色共用一张，卡面「移動」值就是 moveDistance（MovementCard_4 = 4格）
+            MovementCard movementCard = GetDefaultMovementCard();
+
+            if (movementCard != null)
+            {
+                character.SetMovementCard(movementCard);
+            }
+
             character.SetCharacterName(data.GetCharacterName());
             character.InitializeOffBoard(team);
 
@@ -236,6 +245,34 @@ public class CharacterDraftManager : MonoBehaviour
         }
 
         return result;
+    }
+
+    //取场景里 CharacterManager 上挂的默认移动卡（MovementCard_4）
+    private MovementCard GetDefaultMovementCard()
+    {
+        CharacterManager characterManager =
+            FindFirstObjectByType<CharacterManager>();
+
+        if (characterManager == null)
+        {
+            Debug.LogWarning(
+                "CharacterDraftManager：找不到CharacterManager，角色将没有移动卡"
+            );
+
+            return null;
+        }
+
+        MovementCard card = characterManager.GetDefaultMovementCard();
+
+        if (card == null)
+        {
+            Debug.LogWarning(
+                "CharacterManager 的 defaultMovementCard 没有赋值！" +
+                "请在场景里挂上 Assets/Cards/MovementCard_4.asset"
+            );
+        }
+
+        return card;
     }
 
     public CharacterData GetOptionA()
@@ -260,6 +297,24 @@ public class CharacterDraftManager : MonoBehaviour
 
 
     //测试选择
+    // =========================
+    // 给 UI 用的只读访问 / 文本
+    // =========================
+    public bool IsWaitingForPlayerChoice()
+    {
+        return waitingForPlayerChoice;
+    }
+
+    public int GetDraftRound()
+    {
+        return draftRound;
+    }
+
+    public string GetDraftTitleText()
+    {
+        return $"第{draftRound}次选择角色";
+    }
+
     private void OnGUI()
     {
         if (!waitingForPlayerChoice)
@@ -274,7 +329,7 @@ public class CharacterDraftManager : MonoBehaviour
         GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
         buttonStyle.fontSize = 24;
 
-        GUI.Label(new Rect(Screen.width/2-250,50,500,50),$"第{draftRound}次选择角色",titleStyle);
+        GUI.Label(new Rect(Screen.width/2-250,50,500,50),GetDraftTitleText(),titleStyle);
 
         //左边角色
         if(GUI.Button(new Rect(Screen.width / 2 - 350, 150, 300, 150), optionA.GetCharacterName(), buttonStyle)){

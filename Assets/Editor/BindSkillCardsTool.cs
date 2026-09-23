@@ -2,11 +2,11 @@ using UnityEngine;
 using UnityEditor;
 
 /// <summary>
-/// ä¸€é”®æŠŠ Assets/Cards/&lt;è§’è‰²å&gt;/SkillCard1~3.asset
-/// ç»‘å®šåˆ° Assets/Characters/&lt;è§’è‰²å&gt;.asset çš„ skillCards ä¸‰ä¸ªæ§½ã€‚
+/// Ò»¼ü°Ñ Assets/Cards/&lt;½ÇÉ«Ãû&gt;/SkillCard1~3.asset
+/// °ó¶¨µ½ Assets/Characters/&lt;½ÇÉ«Ãû&gt;.asset µÄ skillCards Èı¸ö²Û¡£
 ///
-/// ç”¨æ³•ï¼šUnity èœå•æ  â†’ Battle â†’ è‡ªåŠ¨ç»‘å®šæŠ€èƒ½å¡åˆ°è§’è‰²æ•°æ®
-/// åªè¯»æ ¡éªŒï¼šBattle â†’ æ£€æŸ¥æŠ€èƒ½å¡ç»‘å®šæƒ…å†µ
+/// ÓÃ·¨£ºUnity ²Ëµ¥À¸ ¡ú Battle ¡ú ×Ô¶¯°ó¶¨¼¼ÄÜ¿¨µ½½ÇÉ«Êı¾İ
+/// Ö»¶ÁĞ£Ñé£ºBattle ¡ú ¼ì²é¼¼ÄÜ¿¨°ó¶¨Çé¿ö
 /// </summary>
 public static class BindSkillCardsTool
 {
@@ -19,7 +19,7 @@ public static class BindSkillCardsTool
     private const string CharacterFolder = "Assets/Characters";
     private const string CardFolder = "Assets/Cards";
 
-    [MenuItem("Battle/è‡ªåŠ¨ç»‘å®šæŠ€èƒ½å¡åˆ°è§’è‰²æ•°æ®")]
+    [MenuItem("Battle/×Ô¶¯°ó¶¨¼¼ÄÜ¿¨µ½½ÇÉ«Êı¾İ")]
     public static void BindAll()
     {
         int okChars = 0;
@@ -32,7 +32,7 @@ public static class BindSkillCardsTool
 
             if (data == null)
             {
-                Debug.LogError($"[ç»‘å®š] æ‰¾ä¸åˆ°è§’è‰²æ•°æ®ï¼š{charPath}");
+                Debug.LogError($"[°ó¶¨] ÕÒ²»µ½½ÇÉ«Êı¾İ£º{charPath}");
                 problemCount++;
                 continue;
             }
@@ -46,7 +46,7 @@ public static class BindSkillCardsTool
 
                 if (cards[i] == null)
                 {
-                    Debug.LogWarning($"[ç»‘å®š] æ‰¾ä¸åˆ°æŠ€èƒ½å¡ï¼š{cardPath}");
+                    Debug.LogWarning($"[°ó¶¨] ÕÒ²»µ½¼¼ÄÜ¿¨£º{cardPath}");
                     problemCount++;
                 }
             }
@@ -56,7 +56,7 @@ public static class BindSkillCardsTool
 
             if (arrayProp == null)
             {
-                Debug.LogError($"[ç»‘å®š] {name} ä¸Šæ‰¾ä¸åˆ° skillCards å­—æ®µï¼ˆCharacterData.cs è¢«æ”¹è¿‡ï¼Ÿï¼‰");
+                Debug.LogError($"[°ó¶¨] {name} ÉÏÕÒ²»µ½ skillCards ×Ö¶Î£¨CharacterData.cs ±»¸Ä¹ı£¿£©");
                 problemCount++;
                 continue;
             }
@@ -74,7 +74,7 @@ public static class BindSkillCardsTool
             okChars++;
 
             Debug.Log(
-                $"[ç»‘å®š] {name} â† " +
+                $"[°ó¶¨] {name} ¡û " +
                 $"{CardName(cards[0])} / {CardName(cards[1])} / {CardName(cards[2])}"
             );
         }
@@ -82,10 +82,10 @@ public static class BindSkillCardsTool
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        Debug.Log($"[ç»‘å®š] å®Œæˆï¼šæˆåŠŸç»‘å®š {okChars} ä¸ªè§’è‰²ï¼Œå¼‚å¸¸ {problemCount} å¤„");
+        Debug.Log($"[°ó¶¨] Íê³É£º³É¹¦°ó¶¨ {okChars} ¸ö½ÇÉ«£¬Òì³£ {problemCount} ´¦");
     }
 
-    [MenuItem("Battle/æ£€æŸ¥æŠ€èƒ½å¡ç»‘å®šæƒ…å†µ")]
+    [MenuItem("Battle/¼ì²é¼¼ÄÜ¿¨°ó¶¨Çé¿ö")]
     public static void VerifyAll()
     {
         int okChars = 0;
@@ -97,7 +97,7 @@ public static class BindSkillCardsTool
 
             if (data == null)
             {
-                Debug.LogWarning($"[æ£€æŸ¥] æ‰¾ä¸åˆ° {charPath}");
+                Debug.LogWarning($"[¼ì²é] ÕÒ²»µ½ {charPath}");
                 continue;
             }
 
@@ -120,17 +120,17 @@ public static class BindSkillCardsTool
                 okChars++;
             }
 
-            Debug.Log($"[æ£€æŸ¥] {name}ï¼šå·²ç»‘å®š {bound} / 3 å¼ ");
+            Debug.Log($"[¼ì²é] {name}£ºÒÑ°ó¶¨ {bound} / 3 ÕÅ");
         }
 
-        Debug.Log($"[æ£€æŸ¥] ç»“æœï¼š{okChars} / {CharacterNames.Length} ä¸ªè§’è‰²ç»‘å®šå®Œæ•´");
+        Debug.Log($"[¼ì²é] ½á¹û£º{okChars} / {CharacterNames.Length} ¸ö½ÇÉ«°ó¶¨ÍêÕû");
     }
 
     private static string CardName(SkillCard card)
     {
         if (card == null)
         {
-            return "(æœªæ‰¾åˆ°)";
+            return "(Î´ÕÒµ½)";
         }
 
         return card.GetCardName();

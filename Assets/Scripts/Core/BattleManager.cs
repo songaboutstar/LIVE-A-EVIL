@@ -7,6 +7,9 @@ public class BattleManager: MonoBehaviour
 
     private Character currentCharacter;
 
+    //是否处于「移动卡模式」（点移动卡后，等着点一个己方角色）
+    private bool movementCardMode = false;
+
     private MovementManager movementManager;
     private AttackManager attackManager;
 
@@ -33,6 +36,12 @@ public class BattleManager: MonoBehaviour
         }
        
        
+       //新一局：移动卡恢复可用
+       if (movementManager != null)
+       {
+           movementManager.ResetMovementCardUsed();
+       }
+
        StartPlayerTurn();
     }
 
@@ -61,6 +70,72 @@ public class BattleManager: MonoBehaviour
     }
     //选择角色
 
+    // =========================
+    // 卡牌驱动的角色选择
+    // 点技能卡时调用：让这张卡所属的角色进入选中阶段
+    // 规则：还没移动之前可以自由换卡预览；
+    //       一旦移动过，就不能再切换到别的角色
+    // =========================
+    public bool SelectCharacterByCard(Character character, SkillCard card)
+    {
+        if (character == null)
+        {
+            return false;
+        }
+
+        if (character.GetTeam() != Team.Player)
+        {
+            Debug.Log("只能选择玩家角色！");
+            return false;
+        }
+
+        //同一个角色：直接放行（用于切换它自己的不同技能卡）
+        if (currentCharacter == character)
+        {
+            return true;
+        }
+
+        //已经移动过的角色：不允许再切到别的角色
+        if (currentCharacter != null && currentCharacter.HasMoved())
+        {
+            Debug.Log(
+                $"{currentCharacter.GetCharacterNameV2()} 本回合已经移动过，" +
+                $"不能再切换到其他角色了"
+            );
+            return false;
+        }
+
+        //点了技能卡：退出移动卡模式
+        movementCardMode = false;
+
+        currentCharacter = character;
+        currentState = BattleState.CharacterAction;
+
+        Debug.Log($"卡牌选择角色：{character.GetCharacterNameV2()}");
+
+        //显示这个角色的移动范围：移动力来自这张技能卡上的「移動」值
+        if (movementManager != null)
+        {
+            if (card != null)
+            {
+                movementManager.SelectSkillCard(card);
+                movementManager.StartSkillCardMove(character, card);
+            }
+            else
+            {
+                movementManager.SelectCharacter(character);
+            }
+        }
+
+        //让 SkillManager 记住当前角色（具体看哪张卡由点卡的人再传进来）
+        if (skillManager != null)
+        {
+            skillManager.SelectCharacter(character);
+        }
+
+        return true;
+    }
+
     public void SelectCharacter(Character character)
     {
         if (character == null)
@@ -74,6 +149,22 @@ public class BattleManager: MonoBehaviour
         {
             Debug.Log("只能选择玩家角色！");
             return;
+        }
+
+        //移动卡模式：点角色 → 按这张移动卡的移动值显示范围
+        if (movementCardMode)
+        {
+            if (movementManager != null &&
+                movementManager.HasUsedMovementCard())
+            {
+                //移动卡已经消耗掉了，自动退出模式，走普通选角色
+                ExitMovementCardMode();
+            }
+            else
+            {
+                SelectCharacterByMovementCard(character);
+                return;
+            }
         }
 
         currentCharacter = character;
@@ -196,6 +287,75 @@ public class BattleManager: MonoBehaviour
         EnterSelectCharacterPhase();
     }
 
+    // =========================
+    // 移动卡模式
+    // 点移动卡 → 进这里 → 点任意己方角色 → 按移动卡走 → 走完消耗这张卡
+    // =========================
+    public bool IsMovementCardMode()
+    {
+        return movementCardMode;
+    }
+
+    public void EnterMovementCardMode()
+    {
+        movementCardMode = true;
+
+        //清掉技能卡那套选中状态，改由移动卡接管
+        currentCharacter = null;
+        currentState = BattleState.SelectCharacter;
+
+        if (movementManager != null)
+        {
+            movementManager.ClearMovementRange();
+        }
+        if (skillManager != null)
+        {
+            skillManager.ClearSkillPreview();
+        }
+        if (attackManager != null)
+        {
+            attackManager.ClearAttackRange();
+        }
+        if (actionUIManager != null)
+        {
+            actionUIManager.HideActionPanel();
+        }
+
+        Debug.Log("移动卡：请点一个己方角色");
+    }
+
+    public void ExitMovementCardMode()
+    {
+        movementCardMode = false;
+    }
+
+    //移动卡模式下点角色：直接按移动卡的移动值显示范围
+    private void SelectCharacterByMovementCard(Character character)
+    {
+        if (character.HasMoved())
+        {
+            Debug.Log(
+                $"{character.GetCharacterNameV2()} 本回合已经移动过了，" +
+                $"移动卡不能用在他身上"
+            );
+            return;
+        }
+
+        currentCharacter = character;
+        currentState = BattleState.CharacterAction;
+
+        if (movementManager != null)
+        {
+            movementManager.StartMovementCardMove(character);
+        }
+        if (skillManager != null)
+        {
+            skillManager.SelectCharacter(character);
+        }
+
+        Debug.Log($"移动卡：{character.GetCharacterNameV2()} 可以移动了");
+    }
+
     public BattleState GetCurrentState()
     {
         return currentState;
@@ -219,6 +379,15 @@ public class BattleManager: MonoBehaviour
     public void EndRound()
     {
         Debug.Log("===========回合结束==========");
+
+        //新一轮：退出移动卡模式 + 移动卡恢复可用
+        //（角色自己的 HasMoved / HasAttacked 复位留给回合框架做）
+        movementCardMode = false;
+
+        if (movementManager != null)
+        {
+            movementManager.ResetMovementCardUsed();
+        }
 
         if (timerManager != null)
         {

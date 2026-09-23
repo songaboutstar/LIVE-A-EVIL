@@ -8,6 +8,14 @@ public class CharacterManager : MonoBehaviour
     private MovementCard defaultMovementCard;
     [SerializeField]
     private SkillCard[] defaultSkillCards;
+
+    /// <summary>
+    /// 默认移动卡（场景里 CharacterManager 上已经挂好 MovementCard_4）
+    /// </summary>
+    public MovementCard GetDefaultMovementCard()
+    {
+        return defaultMovementCard;
+    }
    
 
     private IEnumerator Start()

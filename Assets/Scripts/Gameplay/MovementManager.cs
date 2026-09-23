@@ -18,6 +18,12 @@ public class MovementManager : MonoBehaviour
     //当前这一次移动允许的最大距离
     private int currentMoveRange = 0;
 
+    //是否处于「移动卡」移动（点移动卡 → 点己方角色 → 走格子）
+    private bool isMovementCardMove = false;
+
+    //本轮移动卡是否已经用过（用过就消耗掉，一轮一张）
+    private bool movementCardUsed = false;
+
     // 当前可以移动到的 Tile
     private readonly List<Tile> movableTiles = new List<Tile>();
 
@@ -58,6 +64,7 @@ public class MovementManager : MonoBehaviour
 
         //普通移动
         isSkillMove = false;
+        isMovementCardMove = false;
         //设置新的选中角色
         selectedCharacter = character;
 
@@ -92,6 +99,7 @@ public class MovementManager : MonoBehaviour
         ClearMovementRange();
         //技能移动状态
         isSkillMove = true;
+        isMovementCardMove = false;
         //当前角色
         selectedCharacter = character;
         //确保角色保持选中
@@ -101,6 +109,85 @@ public class MovementManager : MonoBehaviour
 
         //使用相同BFS
         CalculateMovementRange(moveRange);
+    }
+
+    // =========================
+    // 移动卡：点移动卡 → 点己方任意角色 → 走格子 → 消耗这张卡
+    // 移动值来自角色身上挂的移动卡（MovementCard_4 = 4格）
+    // =========================
+    public void StartMovementCardMove(Character character)
+    {
+        if (character == null)
+        {
+            Debug.LogWarning("移动卡：没有选择角色！");
+            return;
+        }
+
+        //先清掉上一次的范围
+        ClearMovementRange();
+
+        //一个角色一回合只能移动一次
+        if (character.HasMoved())
+        {
+            Debug.Log(
+                $"{character.GetCharacterNameV2()} 本回合已经移动过了，" +
+                $"移动卡不能用在他身上"
+            );
+            return;
+        }
+
+        MovementCard movementCard = character.GetMovementCard();
+
+        int moveDistance = movementCard != null
+            ? movementCard.GetMoveDistance()
+            : character.GetMovementRange();
+
+        if (movementCard == null)
+        {
+            Debug.LogWarning(
+                $"{character.GetCharacterNameV2()}身上没有移动卡，" +
+                $"改用角色自身移动力 {moveDistance}"
+            );
+        }
+
+        if (selectedCharacter != null && selectedCharacter != character)
+        {
+            selectedCharacter.SetSelected(false);
+        }
+
+        isSkillMove = false;
+        //标记：这一次移动是移动卡走出来的，走完要消耗掉这张卡
+        isMovementCardMove = true;
+
+        selectedCharacter = character;
+        selectedCharacter.SetSelected(true);
+
+        Debug.Log(
+            $"使用移动卡：{character.GetCharacterNameV2()} 最多移动 {moveDistance} 格"
+        );
+
+        if (moveDistance <= 0)
+        {
+            Debug.Log("移动卡移动值为0，不能移动");
+            return;
+        }
+
+        CalculateMovementRange(moveDistance);
+    }
+
+    /// <summary>本轮移动卡是否已经用过</summary>
+    public bool HasUsedMovementCard()
+    {
+        return movementCardUsed;
+    }
+
+    /// <summary>新一轮开始：移动卡恢复可用</summary>
+    public void ResetMovementCardUsed()
+    {
+        movementCardUsed = false;
+        isMovementCardMove = false;
+
+        Debug.Log("移动卡：新一轮开始，移动卡恢复可用");
     }
 
     /// <summary>
@@ -117,12 +204,24 @@ public class MovementManager : MonoBehaviour
         //   selectedCharacter.GetMovementRange();
         //稍微修改移动逻辑
         MovementCard movementCard = selectedCharacter.GetMovementCard();
-        if (movementCard == null)
+
+        int movementRange;
+
+        if (movementCard != null)
         {
-            Debug.LogWarning($"{selectedCharacter.GetCharacterNameV2()}没有移动卡！");
-            return;
+            movementRange = movementCard.GetMoveDistance();
         }
-         int movementRange = movementCard.GetMoveDistance();
+        else
+        {
+            //兜底：运行时可创建的角色身上可能没挂移动卡，
+            //退回角色自身的移动力（默认4，等同移动卡的4格），避免直接卡死
+            movementRange = selectedCharacter.GetMovementRange();
+
+            Debug.LogWarning(
+                $"{selectedCharacter.GetCharacterNameV2()}没有移动卡，" +
+                $"改用角色自身移动力 {movementRange}"
+            );
+        }
        
         //currentMoveRange = movementRange;
 
@@ -450,6 +549,24 @@ public class MovementManager : MonoBehaviour
         selectedCharacter.MoveTo(targetTile);
         selectedCharacter.MarkMoved();
 
+        //移动卡走完：消耗掉这张卡（本轮不能再点移动卡）
+        if (isMovementCardMove)
+        {
+            isMovementCardMove = false;
+            movementCardUsed = true;
+
+            //退出移动卡模式（手牌上的移动卡随之置灰）
+            BattleManager battleManager =
+                FindFirstObjectByType<BattleManager>();
+
+            if (battleManager != null)
+            {
+                battleManager.ExitMovementCardMode();
+            }
+
+            Debug.Log("移动卡已经使用（本轮不能再点移动卡了）");
+        }
+
         ClearMovementRange();
 
         Debug.Log(
@@ -495,14 +612,43 @@ public class MovementManager : MonoBehaviour
 
         Debug.Log($"使用技能卡：{skillCard.GetCardName()},移动值：{moveRange}");
 
-        if (moveRange <= 0)
+        //1、这一次不是移动卡移动，别把移动卡误消耗掉
+        isMovementCardMove = false;
+
+        //2、先清掉上一张卡留下的移动范围：
+        //   否则切换到「移动值为0」的卡时，棋盘上会残留上一张卡的范围
+        ClearMovementRange();
+
+        //3、切换角色选中高亮
+        if (selectedCharacter != null && selectedCharacter != character)
         {
-            Debug.Log("该技能卡移动值为0，不进行移动");
-            return;
+            selectedCharacter.SetSelected(false);
         }
 
         selectedCharacter = character;
-        ClearMovementRange();
+        selectedCharacter.SetSelected(true);
+
+        //4、已经移动过的角色：不显示移动范围（一个角色一回合只能移动一次）
+        if (character.HasMoved())
+        {
+            Debug.Log(
+                $"{character.GetCharacterNameV2()} 本回合已经移动过了，" +
+                $"不再显示移动范围"
+            );
+            return;
+        }
+
+        //5、移动值为0的卡：范围已经清空，本回合不能移动
+        if (moveRange <= 0)
+        {
+            Debug.Log(
+                $"「{skillCard.GetCardName()}」移动值为0：" +
+                $"已清空移动范围，本回合不能移动"
+            );
+            return;
+        }
+
+        //6、按这张卡的实际移动值画移动范围
         CalculateMovementRange(moveRange);
     }
 

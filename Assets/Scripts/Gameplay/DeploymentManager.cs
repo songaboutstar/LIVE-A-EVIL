@@ -28,7 +28,7 @@ public class DeploymentManager : MonoBehaviour
 
     private readonly List<Tile> availableTiles = new List<Tile>();
 
-    private enum DeploymentSide
+    public enum DeploymentSide
     {
         Player,
         Enemy,
@@ -222,11 +222,10 @@ public class DeploymentManager : MonoBehaviour
     // ============ 部署阶段的屏幕提示（不依赖任何 UI 物体） ============
     private void OnGUI()
     {
-        if (currentSide == DeploymentSide.Finished)
+        if (IsDeploymentFinished())
             return;
 
-        List<Character> list =
-            (currentSide == DeploymentSide.Player) ? playerCharacters : enemyCharacters;
+        List<Character> list = GetCurrentList();
 
         if (list == null || list.Count == 0)
             return;
@@ -239,40 +238,119 @@ public class DeploymentManager : MonoBehaviour
         lineStyle.fontSize = 17;
         lineStyle.normal.textColor = Color.yellow;
 
-        string sideName = (currentSide == DeploymentSide.Player) ? "玩家方" : "敌方";
-
         Rect panel = new Rect(10f, 10f, 430f, 134f);
         GUI.Box(panel, GUIContent.none);
 
         float x = panel.x + 12f;
         float y = panel.y + 8f;
 
-        GUI.Label(
-            new Rect(x, y, 410f, 28f),
-            $"【{sideName}角色摆放】 {currentIndex} / {list.Count}",
-            titleStyle
-        );
+        GUI.Label(new Rect(x, y, 410f, 28f), GetDeploymentTitleText(), titleStyle);
         y += 30f;
+
+        string currentText = GetDeploymentCurrentText();
+
+        if (currentText != "")
+        {
+            GUI.Label(new Rect(x, y, 410f, 24f), currentText, lineStyle);
+        }
+        y += 26f;
+
+        GUI.Label(new Rect(x, y, 410f, 24f), GetPlacementHintText(), lineStyle);
+        y += 26f;
+
+        string placedText = GetDeploymentPlacedText();
+
+        if (placedText != "")
+        {
+            GUI.Label(new Rect(x, y, 410f, 24f), placedText, lineStyle);
+        }
+    }
+
+    // =========================
+    // 给 UI 用的只读访问 / 文本
+    // IMGUI 和以后的 Canvas UI 都从这里取，保证两边一致
+    // =========================
+    public DeploymentSide GetCurrentSide()
+    {
+        return currentSide;
+    }
+
+    public bool IsDeploymentFinished()
+    {
+        return currentSide == DeploymentSide.Finished;
+    }
+
+    public int GetCurrentIndex()
+    {
+        return currentIndex;
+    }
+
+    public Character GetSelectedCharacter()
+    {
+        return selectedCharacter;
+    }
+
+    public List<Character> GetCurrentList()
+    {
+        return (currentSide == DeploymentSide.Player)
+            ? playerCharacters
+            : enemyCharacters;
+    }
+
+    public int GetCurrentListCount()
+    {
+        List<Character> list = GetCurrentList();
+
+        return (list != null) ? list.Count : 0;
+    }
+
+    //当前该摆的角色（没手动选就取列表里下一个）
+    public Character GetCurrentDeployingCharacter()
+    {
+        List<Character> list = GetCurrentList();
 
         Character current = selectedCharacter;
 
-        if (current == null && currentIndex < list.Count)
+        if (current == null && list != null && currentIndex < list.Count)
         {
             current = list[currentIndex];
         }
 
-        if (current != null)
-        {
-            GUI.Label(
-                new Rect(x, y, 410f, 24f),
-                $"当前要摆：{current.GetCharacterNameV2()}   HP {current.GetMaxHpV2()}",
-                lineStyle
-            );
-        }
-        y += 26f;
+        return current;
+    }
 
-        GUI.Label(new Rect(x, y, 410f, 24f), "点棋盘上高亮的格子 → 放下该角色", lineStyle);
-        y += 26f;
+    public string GetDeploymentTitleText()
+    {
+        string sideName = (currentSide == DeploymentSide.Player) ? "玩家方" : "敌方";
+
+        return $"【{sideName}角色摆放】 {currentIndex} / {GetCurrentListCount()}";
+    }
+
+    public string GetDeploymentCurrentText()
+    {
+        Character current = GetCurrentDeployingCharacter();
+
+        if (current == null)
+        {
+            return "";
+        }
+
+        return $"当前要摆：{current.GetCharacterNameV2()}   HP {current.GetMaxHpV2()}";
+    }
+
+    public string GetPlacementHintText()
+    {
+        return "点棋盘上高亮的格子 → 放下该角色";
+    }
+
+    public string GetDeploymentPlacedText()
+    {
+        List<Character> list = GetCurrentList();
+
+        if (list == null)
+        {
+            return "";
+        }
 
         string placed = "";
 
@@ -284,13 +362,6 @@ public class DeploymentManager : MonoBehaviour
             }
         }
 
-        if (placed != "")
-        {
-            GUI.Label(new Rect(x, y, 410f, 24f), "已摆放：" + placed, lineStyle);
-        }
+        return (placed == "") ? "" : "已摆放：" + placed;
     }
-  //  public DeploymentSide GetCurrentSide()
-    //{
-      //  return currentSide;
-    //}
 }

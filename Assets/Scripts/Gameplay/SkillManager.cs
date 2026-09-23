@@ -684,6 +684,14 @@ public class SkillManager : MonoBehaviour
         targetTiles.Clear();
     }
 
+    //只清除棋盘上的技能预览（射程/效果范围），保留当前角色
+    //用于「移动范围 <-> 技能射程」来回切换预览
+    public void ClearSkillPreview()
+    {
+        ClearTargetTiles();
+        ClearEffectTiles();
+    }
+
     //清除技能
     public void ClearSkill()
     {
@@ -873,13 +881,15 @@ public class SkillManager : MonoBehaviour
             if (targetCharacter.GetTeam() == character.GetTeam())
                 continue;
 
-            //命中直线上的第一个敌方角色
+            //命中直线上的第一个敌方角色（伤害同样受能力低下修正）
+            int damage = CalculateFinalDamage(character, targetCharacter, card);
+
             Debug.Log(
                 $"直线技能命中：{targetCharacter.GetCharacterName()}，" +
-                $"伤害={card.GetDamage()}"
+                $"伤害={damage}"
             );
 
-            targetCharacter.TakeDamage(card.GetDamage());
+            targetCharacter.TakeDamage(damage);
 
             //直线攻击同样要结算卡面特殊效果（击飞 / 取消计时 等）
             ApplySpecialEffects(character, targetCharacter, card);
@@ -894,6 +904,29 @@ public class SkillManager : MonoBehaviour
     // 特殊效果结算
     // =========================
 
+    //按规则书算最终伤害：卡面伤害 - 施法者的能力低下层数 + 目标的能力低下层数
+    private int CalculateFinalDamage(Character caster, Character target, SkillCard card)
+    {
+        if (card == null)
+        {
+            return 0;
+        }
+
+        int finalDamage = card.GetDamage();
+
+        if (caster != null)
+        {
+            finalDamage += caster.GetOutgoingDamageModifier();
+        }
+
+        if (target != null)
+        {
+            finalDamage += target.GetIncomingDamageModifier();
+        }
+
+        return Mathf.Max(0, finalDamage);
+    }
+
     //结算效果范围：敌方吃伤害 + 特殊效果；己方只在带「回复」效果时被治疗
     private void ResolveEffectArea(Character caster, SkillCard card, bool isPending)
     {
@@ -902,7 +935,6 @@ public class SkillManager : MonoBehaviour
             return;
         }
 
-        int damage = card.GetDamage();
         int heal = card.GetHealAmount();
         bool hasHeal = card.HasEffect(SkillEffectType.Heal);
 
@@ -952,6 +984,9 @@ public class SkillManager : MonoBehaviour
                 continue;
             }
 
+            //每个目标的伤害单独算：他自己的能力低下层数会让他更脆
+            int damage = CalculateFinalDamage(caster, enemy, card);
+
             if (damage > 0)
             {
                 Debug.Log(
@@ -997,6 +1032,13 @@ public class SkillManager : MonoBehaviour
         if (card.HasEffect(SkillEffectType.CancelTimer) || hasKnockBack)
         {
             CancelTimerOf(target);
+        }
+
+        //能力低下：给目标叠一层标记（可叠加）
+        //放在最后：本次攻击的伤害不应该被这一层影响
+        if (card.HasEffect(SkillEffectType.Weak))
+        {
+            target.AddWeakStack();
         }
     }
 

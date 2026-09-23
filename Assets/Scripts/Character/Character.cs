@@ -19,6 +19,9 @@ public class Character : MonoBehaviour
     [SerializeField]
     private int maxHp = 100;
     private int currentHp;
+
+    //能力低下层数：每层让打出的伤害 -1、受到的伤害 +1（可叠加）
+    private int weakStacks = 0;
     [SerializeField]
     private int attack = 20;
     
@@ -75,6 +78,8 @@ public class Character : MonoBehaviour
 
     // 选中状态颜色
     private readonly Color selectedColor = Color.yellow;
+    //能力低下时用来染色的颜色
+    private readonly Color weakColor = Color.magenta;
 
     private void Awake()
     {
@@ -282,15 +287,17 @@ public class Character : MonoBehaviour
             //  normalColor;
             return;
         }
-       // Color color;
-        if (team==Team.Player)
+
+        Color baseColor = (team == Team.Player) ? playerColor : enemyColor;
+
+        //有能力低下时染色，方便一眼看出谁被弱化了
+        if (weakStacks > 0)
         {
-            characterMaterial.color = playerColor;
+            characterMaterial.color = Color.Lerp(baseColor, weakColor, 0.6f);
+            return;
         }
-        else
-        {
-            characterMaterial.color = enemyColor;
-        }
+
+        characterMaterial.color = baseColor;
     }
     ///移动角色到指定Tile
     public void MoveTo(Tile targetTile)
@@ -350,6 +357,67 @@ public class Character : MonoBehaviour
         );
     }
 
+    // =========================
+    // 能力低下（可叠加）
+    // 每层：打出的伤害 -1、受到的伤害 +1
+    // =========================
+
+    /// <summary>
+    /// 添加能力低下层数
+    /// </summary>
+    public void AddWeakStack(int count = 1)
+    {
+        if (count <= 0)
+        {
+            return;
+        }
+
+        weakStacks += count;
+
+        Debug.Log(
+            $"{GetCharacterNameV2()}获得能力低下 x{count}，" +
+            $"当前 {weakStacks} 层"
+        );
+
+        //刷新颜色（选中状态优先）
+        SetSelected(isSelected);
+    }
+
+    /// <summary>
+    /// 清除所有能力低下层数
+    /// </summary>
+    public void ClearWeakStacks()
+    {
+        if (weakStacks == 0)
+        {
+            return;
+        }
+
+        weakStacks = 0;
+        SetSelected(isSelected);
+    }
+
+    public int GetWeakStacks()
+    {
+        return weakStacks;
+    }
+
+    /// <summary>
+    /// 攻击力修正：每层能力低下让打出的伤害 -1
+    /// </summary>
+    public int GetOutgoingDamageModifier()
+    {
+        return -weakStacks;
+    }
+
+    /// <summary>
+    /// 受击值修正：每层能力低下让受到的伤害 +1
+    /// </summary>
+    public int GetIncomingDamageModifier()
+    {
+        return weakStacks;
+    }
+
     public string GetCharacterNameV2()
     {
         return characterData != null ? characterData.GetCharacterName() : "Unknow Character";
@@ -388,6 +456,12 @@ public class Character : MonoBehaviour
         team = characterTeam;
         currentTile = null;
         gridPosition = new GridPosition(-1, -1);
+
+        // 必须把棋子移出棋盘：
+        // GameObject.CreatePrimitive 会把物体创建在世界原点 (0,0,0)，
+        // 而 SetParent 默认保留世界坐标，所以不移动的话 8 个角色会全部叠在
+        // 格子 (0,0) 上——既视觉重叠，也会用自己的 Collider 挡住 (0,0) 的点击。
+        transform.position = new Vector3(-100f, -100f, 0f);
 
         if (characterData != null)
         {
