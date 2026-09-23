@@ -208,12 +208,15 @@ public class PlayerCardManager : MonoBehaviour
         }
         else
         {
-            //详细布局：保持原来的位置和尺寸
-            float blockY = Screen.height - 210f;
+            //详细布局：位置和尺寸也来自配置
+            UILayoutConfig config = UILayoutConfig.Get();
+
+            float blockY = Screen.height - config.onGuiDetailedBlockOffset;
+            float cardHeight = config.onGuiDetailedCardHeight;
 
             DrawHandTipLine(blockY, scale);
-            DrawCardRow(blockY + 28f, scale, 62f);
-            DrawInfoPanel(blockY + 28f + 62f + 6f);
+            DrawCardRow(blockY + 28f, scale, cardHeight);
+            DrawInfoPanel(blockY + 28f + cardHeight + 6f);
         }
     }
 
@@ -222,43 +225,61 @@ public class PlayerCardManager : MonoBehaviour
     // =========================
     private float GetUIScale()
     {
-        return Mathf.Clamp(Screen.height / 900f, 0.75f, 1f);
+        UILayoutConfig config = UILayoutConfig.Get();
+
+        return Mathf.Clamp(
+            Screen.height / config.onGuiBaseHeight,
+            config.onGuiScaleMin,
+            config.onGuiScaleMax
+        );
     }
 
     //手牌区高度（紧凑）
     private float GetCompactCardHeight(float scale)
     {
-        return Mathf.Max(30f, Mathf.Round(46f * scale));
+        UILayoutConfig config = UILayoutConfig.Get();
+
+        return Mathf.Max(
+            config.onGuiCompactCardHeightMin,
+            Mathf.Round(config.onGuiCompactCardHeight * scale)
+        );
     }
 
     //紧凑信息条高度（3 行）
     private float GetCompactInfoHeight(float scale)
     {
-        return GetInfoLineHeight(scale) * 3f + 4f;
+        return GetInfoLineHeight(scale) * UILayoutConfig.Get().onGuiCompactInfoLines + 4f;
     }
 
     private float GetInfoLineHeight(float scale)
     {
-        return Mathf.Max(12, Mathf.RoundToInt(13f * scale)) + 6f;
+        UILayoutConfig config = UILayoutConfig.Get();
+
+        return Mathf.Max(12, Mathf.RoundToInt(config.onGuiInfoFontSize * scale)) +
+               config.onGuiInfoLinePadding;
     }
 
     //手牌一行始终塞进屏幕：6 张（移动卡 + 5 技能卡）
     private float GetCardWidth(float scale)
     {
-        float gap = 6f * scale;
+        UILayoutConfig config = UILayoutConfig.Get();
+
+        float gap = config.onGuiCardGap * scale;
 
         return Mathf.Clamp(
             (Screen.width - 20f - gap * 5f) / 6f,
-            74f,
-            138f
+            config.onGuiCardWidthMin,
+            config.onGuiCardWidthMax
         );
     }
 
     //手牌提示行（数量 + 快捷键）
     private void DrawHandTipLine(float y, float scale)
     {
+        UILayoutConfig config = UILayoutConfig.Get();
+
         GUIStyle style = new GUIStyle(GUI.skin.label);
-        style.fontSize = Mathf.Max(13, Mathf.RoundToInt(15f * scale));
+        style.fontSize = Mathf.Max(13, Mathf.RoundToInt(config.onGuiTipFontSize * scale));
 
         string hint = "　[F1 隐藏 / F2 详细 / Q 切预览]";
         float height = Mathf.Max(22f, 24f * scale);
@@ -275,11 +296,13 @@ public class PlayerCardManager : MonoBehaviour
     {
         bool isEnemy = IsEnemySide();
 
-        float gap = 6f * scale;
+        UILayoutConfig config = UILayoutConfig.Get();
+
+        float gap = config.onGuiCardGap * scale;
         float cardWidth = GetCardWidth(scale);
 
         GUIStyle cardStyle = new GUIStyle(GUI.skin.button);
-        cardStyle.fontSize = Mathf.Max(11, Mathf.RoundToInt(12f * scale));
+        cardStyle.fontSize = Mathf.Max(11, Mathf.RoundToInt(config.onGuiCardFontSize * scale));
         cardStyle.alignment = TextAnchor.MiddleCenter;
         cardStyle.wordWrap = true;
 
@@ -380,16 +403,24 @@ public class PlayerCardManager : MonoBehaviour
         float panelW = Screen.width - panelX - 6f;
 
         //右侧太窄：不硬塞，否则会盖住棋盘
-        if (panelW < 170f)
+        if (panelW < UILayoutConfig.Get().onGuiRightPanelMinWidth)
         {
             return false;
         }
 
+        UILayoutConfig config = UILayoutConfig.Get();
+
         float lineHeight = GetInfoLineHeight(scale);
-        float panelY = 34f;
+        float panelY = config.onGuiRightPanelTop;
+
+        float totalLines =
+            config.onGuiRightRoleLines +
+            config.onGuiRightSkillLines +
+            config.onGuiRightPreviewLines;
+
         float panelH = Mathf.Min(
             Screen.height - panelY - 8f,
-            lineHeight * 12f + 12f
+            lineHeight * totalLines + 12f
         );
 
         Rect panel = new Rect(panelX, panelY, panelW, panelH);
@@ -404,25 +435,25 @@ public class PlayerCardManager : MonoBehaviour
         float innerW = panel.width - 12f;
         float textY = panel.y + 6f;
 
-        //角色状态（3 行）
+        //角色状态
         GUI.Label(
-            new Rect(innerX, textY, innerW, lineHeight * 3f),
+            new Rect(innerX, textY, innerW, lineHeight * config.onGuiRightRoleLines),
             GetRoleInfoText(),
             style
         );
-        textY += lineHeight * 3f;
+        textY += lineHeight * config.onGuiRightRoleLines;
 
-        //技能卡详情（7 行，长文本自动折行）
+        //技能卡详情（长文本自动折行）
         GUI.Label(
-            new Rect(innerX, textY, innerW, lineHeight * 7f),
+            new Rect(innerX, textY, innerW, lineHeight * config.onGuiRightSkillLines),
             GetSkillInfoText(),
             style
         );
-        textY += lineHeight * 7f;
+        textY += lineHeight * config.onGuiRightSkillLines;
 
-        //预览状态 + 快捷键（2 行）
+        //预览状态 + 快捷键
         GUI.Label(
-            new Rect(innerX, textY, innerW, lineHeight * 2f),
+            new Rect(innerX, textY, innerW, lineHeight * config.onGuiRightPreviewLines),
             GetShortPreviewText() + "\n[F1 隐藏 / F2 详细 / Q 切预览]",
             style
         );
@@ -770,7 +801,14 @@ public class PlayerCardManager : MonoBehaviour
     // 选中角色 / 技能卡的信息面板
     private void DrawInfoPanel(float y)
     {
-        Rect panel = new Rect(10f, y, 900f, 118f);
+        UILayoutConfig config = UILayoutConfig.Get();
+
+        Rect panel = new Rect(
+            10f,
+            y,
+            config.onGuiInfoPanelWidth,
+            config.onGuiInfoPanelHeight
+        );
         GUI.Box(panel, GUIContent.none);
 
         GUIStyle style = new GUIStyle(GUI.skin.label);

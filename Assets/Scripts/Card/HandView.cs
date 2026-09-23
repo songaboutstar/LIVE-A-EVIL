@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// Canvas 版手牌面板（P3）
@@ -73,6 +74,8 @@ public class HandView : MonoBehaviour
         {
             cardManager = FindPlayerSideCardManager();
         }
+
+        ApplyLayoutFromConfig();
 
         if (movementSlot != null)
         {
@@ -255,14 +258,26 @@ public class HandView : MonoBehaviour
             return;
         }
 
-        float boardRight = local.x + railPadding;
-        float railRight = canvasRect.rect.width * 0.5f - railPadding;
+        UILayoutConfig config = UILayoutConfig.Get();
 
-        float width = Mathf.Clamp(
-            railRight - boardRight,
-            railMinWidth,
-            railMaxWidth
-        );
+        float width;
+
+        if (config != null && config.railFixedWidth > 0f)
+        {
+            //配置里指定了固定宽度：不再跟随棋盘
+            width = config.railFixedWidth;
+        }
+        else
+        {
+            float boardRight = local.x + railPadding;
+            float railRight = canvasRect.rect.width * 0.5f - railPadding;
+
+            width = Mathf.Clamp(
+                railRight - boardRight,
+                railMinWidth,
+                railMaxWidth
+            );
+        }
 
         Vector2 size = rightRail.sizeDelta;
 
@@ -286,6 +301,144 @@ public class HandView : MonoBehaviour
         }
 
         return mainCamera;
+    }
+
+    // =========================
+    // 把 UILayoutConfig 里的尺寸应用到面板上
+    // 好处：改资源 → 重进 Play 就生效，不用重跑生成器，也不会被生成器覆盖
+    // =========================
+    //改完 Assets/Resources/UILayoutConfig.asset 后，右键这个组件 →「套用布局配置」即可立刻看到效果
+    [ContextMenu("套用布局配置")]
+    public void ApplyLayoutFromConfig()
+    {
+        UILayoutConfig config = UILayoutConfig.Get();
+
+        if (config == null)
+        {
+            return;
+        }
+
+        //右侧竖栏的定位参数也从配置读（PlaceRightRail 会用到）
+        railMinWidth = config.railMinWidth;
+        railMaxWidth = config.railMaxWidth;
+        railPadding = config.railPadding;
+
+        //--- 手牌条 ---
+        RectTransform panel = transform.Find("HandPanel") as RectTransform;
+
+        if (panel != null)
+        {
+            panel.sizeDelta = new Vector2(panel.sizeDelta.x, config.handPanelHeight);
+            panel.anchoredPosition = new Vector2(panel.anchoredPosition.x, config.handPanelBottom);
+
+            RectTransform tip = panel.Find("TipText") as RectTransform;
+
+            if (tip != null)
+            {
+                tip.anchoredPosition = new Vector2(tip.anchoredPosition.x, config.tipTop);
+                tip.sizeDelta = new Vector2(tip.sizeDelta.x, config.tipHeight);
+                SetFontSize(tip, config.tipFontSize);
+            }
+
+            RectTransform row = panel.Find("CardRow") as RectTransform;
+
+            if (row != null)
+            {
+                row.anchoredPosition = new Vector2(row.anchoredPosition.x, config.cardRowTop);
+                row.sizeDelta = new Vector2(row.sizeDelta.x, config.cardRowHeight);
+
+                HorizontalLayoutGroup layout = row.GetComponent<HorizontalLayoutGroup>();
+
+                if (layout != null)
+                {
+                    layout.spacing = config.cardGap;
+                }
+            }
+        }
+
+        ApplySlotLayout(movementSlot, config.movementSlotWidth, config);
+        ApplySlotLayout(skillSlots, config.cardSlotWidth, config);
+
+        //--- 右侧竖栏 ---
+        if (rightRail != null)
+        {
+            rightRail.anchoredPosition = new Vector2(
+                rightRail.anchoredPosition.x,
+                -config.railTop
+            );
+
+            rightRail.sizeDelta = new Vector2(
+                config.railFixedWidth > 0f
+                    ? config.railFixedWidth
+                    : rightRail.sizeDelta.x,
+                -(config.railTop + config.railBottomClearance)
+            );
+
+            ApplyTextLayout(rightRail, "RoleText", config.roleTop, config.roleHeight, config);
+            ApplyTextLayout(rightRail, "SkillText", config.skillTop, config.skillHeight, config);
+            ApplyTextLayout(rightRail, "PreviewText", config.previewTop, config.previewHeight, config);
+        }
+    }
+
+    private void ApplySlotLayout(CardButtonView slot, float width, UILayoutConfig config)
+    {
+        if (slot == null)
+        {
+            return;
+        }
+
+        LayoutElement element = slot.GetComponent<LayoutElement>();
+
+        if (element != null)
+        {
+            element.preferredWidth = width;
+            element.preferredHeight = config.cardSlotHeight;
+        }
+
+        slot.ApplyLayout(config.cardFontSize);
+    }
+
+    private void ApplySlotLayout(CardButtonView[] slots, float width, UILayoutConfig config)
+    {
+        if (slots == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            ApplySlotLayout(slots[i], width, config);
+        }
+    }
+
+    private void ApplyTextLayout(
+        RectTransform parent,
+        string childName,
+        float top,
+        float height,
+        UILayoutConfig config)
+    {
+        RectTransform rect = parent.Find(childName) as RectTransform;
+
+        if (rect == null)
+        {
+            return;
+        }
+
+        rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, top);
+        rect.sizeDelta = new Vector2(rect.sizeDelta.x, height);
+
+        SetFontSize(rect, config.infoFontSize);
+    }
+
+    private void SetFontSize(RectTransform rect, int fontSize)
+    {
+        TMP_Text text = rect.GetComponent<TMP_Text>();
+
+        if (text != null)
+        {
+            text.fontSize = fontSize;
+        }
     }
 
     private void SetText(TMP_Text target, ref string cache, string value)

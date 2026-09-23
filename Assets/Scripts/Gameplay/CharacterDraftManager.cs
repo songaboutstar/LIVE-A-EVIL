@@ -329,15 +329,43 @@ public class CharacterDraftManager : MonoBehaviour
         GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
         buttonStyle.fontSize = 24;
 
-        GUI.Label(new Rect(Screen.width/2-250,50,500,50),GetDraftTitleText(),titleStyle);
+        UILayoutConfig config = UILayoutConfig.Get();
+
+        GUI.Label(
+            new Rect(
+                Screen.width * 0.5f - config.draftTitleSize.x * 0.5f,
+                config.draftTitleY,
+                config.draftTitleSize.x,
+                config.draftTitleSize.y
+            ),
+            GetDraftTitleText(),
+            titleStyle
+        );
 
         //×ó±ß½ÇÉ«
-        if(GUI.Button(new Rect(Screen.width / 2 - 350, 150, 300, 150), optionA.GetCharacterName(), buttonStyle)){
+        if(GUI.Button(
+            new Rect(
+                Screen.width * 0.5f - config.draftButtonOffsetX,
+                config.draftButtonY,
+                config.draftButtonSize.x,
+                config.draftButtonSize.y
+            ),
+            optionA.GetCharacterName(),
+            buttonStyle))
+        {
             PlayerChoose(0);
             return;
         }
         //ÓÒ±ß½ÇÉ«
-        if (GUI.Button(new Rect(Screen.width / 2 + 50, 150, 300, 150), optionB.GetCharacterName(), buttonStyle))
+        if (GUI.Button(
+            new Rect(
+                Screen.width * 0.5f + config.draftButtonRightGap,
+                config.draftButtonY,
+                config.draftButtonSize.x,
+                config.draftButtonSize.y
+            ),
+            optionB.GetCharacterName(),
+            buttonStyle))
         {
             PlayerChoose(1);
         }

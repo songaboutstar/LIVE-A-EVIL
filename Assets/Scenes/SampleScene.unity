@@ -1712,7 +1712,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -8, y: -40}
+  m_AnchoredPosition: {x: -31, y: -25.999939}
   m_SizeDelta: {x: 420, y: -180}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &439884071
@@ -2353,8 +2353,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0, y: 6}
-  m_SizeDelta: {x: 0, y: 126}
+  m_AnchoredPosition: {x: 5, y: 5}
+  m_SizeDelta: {x: 0, y: 128.745}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &825654632
 MonoBehaviour:
@@ -3295,13 +3295,13 @@ MonoBehaviour:
   - x: 1
     y: 1
   enemyStartPositions:
-  - x: 6
+  - x: 5
     y: 0
-  - x: 6
+  - x: 5
     y: 1
-  - x: 6
+  - x: 5
     y: 2
-  - x: 6
+  - x: 5
     y: 3
 --- !u!4 &1268248918
 Transform:

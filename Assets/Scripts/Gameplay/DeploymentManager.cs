@@ -238,31 +238,40 @@ public class DeploymentManager : MonoBehaviour
         lineStyle.fontSize = 17;
         lineStyle.normal.textColor = Color.yellow;
 
-        Rect panel = new Rect(10f, 10f, 430f, 134f);
+        UILayoutConfig config = UILayoutConfig.Get();
+
+        Rect panel = new Rect(
+            config.deploymentPanelPos.x,
+            config.deploymentPanelPos.y,
+            config.deploymentPanelSize.x,
+            config.deploymentPanelSize.y
+        );
+
         GUI.Box(panel, GUIContent.none);
 
         float x = panel.x + 12f;
         float y = panel.y + 8f;
+        float lineWidth = panel.width - 20f;
 
-        GUI.Label(new Rect(x, y, 410f, 28f), GetDeploymentTitleText(), titleStyle);
+        GUI.Label(new Rect(x, y, lineWidth, 28f), GetDeploymentTitleText(), titleStyle);
         y += 30f;
 
         string currentText = GetDeploymentCurrentText();
 
         if (currentText != "")
         {
-            GUI.Label(new Rect(x, y, 410f, 24f), currentText, lineStyle);
+            GUI.Label(new Rect(x, y, lineWidth, 24f), currentText, lineStyle);
         }
         y += 26f;
 
-        GUI.Label(new Rect(x, y, 410f, 24f), GetPlacementHintText(), lineStyle);
+        GUI.Label(new Rect(x, y, lineWidth, 24f), GetPlacementHintText(), lineStyle);
         y += 26f;
 
         string placedText = GetDeploymentPlacedText();
 
         if (placedText != "")
         {
-            GUI.Label(new Rect(x, y, 410f, 24f), placedText, lineStyle);
+            GUI.Label(new Rect(x, y, lineWidth, 24f), placedText, lineStyle);
         }
     }
 

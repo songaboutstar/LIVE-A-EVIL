@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3aa0af5b7246f14e959814096df991f, type: 3}
+  m_Name: UILayoutConfig
+  m_EditorClassIdentifier: 
+  referenceWidth: 1920
+  referenceHeight: 1080
+  matchWidthOrHeight: 0.5
+  handPanelHeight: 126
+  handPanelBottom: 6
+  tipTop: -4
+  tipHeight: 32
+  tipFontSize: 20
+  cardRowTop: -40
+  cardRowHeight: 78
+  movementSlotWidth: 170
+  cardSlotWidth: 150
+  cardSlotHeight: 78
+  cardGap: 8
+  cardFontSize: 17
+  railTop: 40
+  railBottomClearance: 130
+  railMinWidth: 260
+  railMaxWidth: 460
+  railPadding: 8
+  railFixedWidth: 0
+  infoFontSize: 19
+  roleTop: -8
+  roleHeight: 76
+  skillTop: -92
+  skillHeight: 290
+  previewTop: -392
+  previewHeight: 60
+  onGuiBaseHeight: 900
+  onGuiScaleMin: 0.75
+  onGuiScaleMax: 1
+  onGuiCompactCardHeight: 46
+  onGuiCompactCardHeightMin: 30
+  onGuiCardWidthMin: 74
+  onGuiCardWidthMax: 138
+  onGuiCardGap: 6
+  onGuiTipFontSize: 15
+  onGuiCardFontSize: 12
+  onGuiInfoFontSize: 13
+  onGuiInfoLinePadding: 6
+  onGuiDetailedBlockOffset: 210
+  onGuiDetailedCardHeight: 62
+  onGuiCompactInfoLines: 3
+  onGuiInfoPanelWidth: 900
+  onGuiInfoPanelHeight: 118
+  onGuiRightPanelTop: 34
+  onGuiRightPanelMinWidth: 170
+  onGuiRightRoleLines: 3
+  onGuiRightSkillLines: 7
+  onGuiRightPreviewLines: 2
+  deploymentPanelPos: {x: 10, y: 10}
+  deploymentPanelSize: {x: 430, y: 134}
+  draftTitleY: 50
+  draftTitleSize: {x: 500, y: 50}
+  draftTitleFontSize: 28
+  draftButtonY: 150
+  draftButtonSize: {x: 300, y: 150}
+  draftButtonFontSize: 24
+  draftButtonOffsetX: 350
+  draftButtonRightGap: 50

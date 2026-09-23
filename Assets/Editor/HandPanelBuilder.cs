@@ -176,6 +176,9 @@ public static class HandPanelBuilder
 
         EditorUtility.SetDirty(view);
 
+        //生成的尺寸只是「起步值」，真正生效的是 UILayoutConfig 资源
+        view.ApplyLayoutFromConfig();
+
         //让 PlayerCardManager 记住这个面板，并打开 Canvas 版（F3 可切回 OnGUI 对比）
         if (playerCards != null)
         {
@@ -234,7 +237,7 @@ public static class HandPanelBuilder
 
         TextMeshProUGUI text = go.AddComponent<TextMeshProUGUI>();
 
-        text.font = TMP_Settings.defaultFontAsset;
+        text.font = GetUIFontAsset();
         text.fontSize = fontSize;
         text.alignment = alignment;
         text.color = new Color(1f, 0.92f, 0.5f);
@@ -294,6 +297,16 @@ public static class HandPanelBuilder
         so.ApplyModifiedPropertiesWithoutUndo();
 
         return view;
+    }
+
+    //UI 文本优先直接用中文字体资源（找不到才退回 TMP 默认字体）
+    private static TMP_FontAsset GetUIFontAsset()
+    {
+        TMP_FontAsset cjk = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(
+            "Assets/Fonts/NotoSansSC SDF.asset"
+        );
+
+        return (cjk != null) ? cjk : TMP_Settings.defaultFontAsset;
     }
 
     private static void SetRef(SerializedObject so, string field, Object value)

@@ -159,6 +159,15 @@ public class CardButtonView : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    //按布局配置调字号（槽位宽高由 HandView 通过 LayoutElement 设置）
+    public void ApplyLayout(int fontSize)
+    {
+        if (label != null)
+        {
+            label.fontSize = fontSize;
+        }
+    }
+
     public void SetSelected(bool selected)
     {
         if (highlight == selected)
